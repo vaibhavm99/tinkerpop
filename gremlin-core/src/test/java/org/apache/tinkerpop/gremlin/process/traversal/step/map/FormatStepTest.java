@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -185,22 +185,22 @@ public class FormatStepTest extends StepTest {
     }
 
     @Test
-    public void testScopingInfo() {
+    public void testPopInstruction() {
         final FormatStep formatStep = new FormatStep(__.identity().asAdmin(), "%{Hello} %{world}");
 
-        final Scoping.ScopingInfo scopingInfo1 = new Scoping.ScopingInfo();
-        scopingInfo1.label = "Hello";
-        scopingInfo1.pop = Pop.last;
+        final PopContaining.PopInstruction popInstruction1 = new PopContaining.PopInstruction();
+        popInstruction1.label = "Hello";
+        popInstruction1.pop = Pop.last;
 
-        final Scoping.ScopingInfo scopingInfo2 = new Scoping.ScopingInfo();
-        scopingInfo2.label = "world";
-        scopingInfo2.pop = Pop.last;
+        final PopContaining.PopInstruction popInstruction2 = new PopContaining.PopInstruction();
+        popInstruction2.label = "world";
+        popInstruction2.pop = Pop.last;
 
-        final HashSet<Scoping.ScopingInfo> scopingInfoSet = new HashSet<>();
-        scopingInfoSet.add(scopingInfo1);
-        scopingInfoSet.add(scopingInfo2);
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = new HashSet<>();
+        popInstructionSet.add(popInstruction1);
+        popInstructionSet.add(popInstruction2);
 
-        assertEquals(formatStep.getScopingInfo(), scopingInfoSet);
+        assertEquals(formatStep.getPopInstructions(), popInstructionSet);
 
     }
 }

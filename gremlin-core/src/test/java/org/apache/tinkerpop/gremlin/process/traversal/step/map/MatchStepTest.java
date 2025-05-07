@@ -18,12 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
@@ -421,18 +422,19 @@ public class MatchStepTest extends StepTest {
     }
 
     @Test
-    public void testScopingInfo() {
+    public void testPopInstruction() {
         final Traversal.Admin<?, ?> traversal = __.match(as("a").out().as("b"), as("c").path().as("d")).asAdmin();
         final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
 
-        final Scoping.ScopingInfo scopingInfo = new Scoping.ScopingInfo();
-        scopingInfo.label = "c";
-        scopingInfo.pop = Pop.last;
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"a", Pop.last},
+                new Object[]{"b", Pop.last},
+                new Object[]{"c", Pop.last},
+                new Object[]{"d", Pop.last}
+        );
 
-        final HashSet<Scoping.ScopingInfo> scopingInfoSet = new HashSet<>();
-        scopingInfoSet.add(scopingInfo);
 
-        assertEquals(matchStep.getScopingInfo(), scopingInfoSet);
+        assertEquals(matchStep.getPopInstructions(), popInstructionSet);
     }
 
 }

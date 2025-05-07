@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ByModulating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
@@ -789,26 +790,17 @@ public final class TraversalHelper {
     }
 
     /**
-     * Used to get ScopingInfo of a traversal. Scoping info includes the labels it needs, and the pop type for each label.
+     * Used to get PopInstruction of a traversal. Pop Instruction includes the labels it needs, and the pop type for each label.
      *
-     * @param traversal     the traversal to get Scoping Info for
+     * @param traversal     the traversal to get Scope Context for
      * @param <T>           the traversal type
-     * @return              A Set of {@link Scoping.ScopingInfo} values which contain the label and Pop value
+     * @return              A Set of {@link org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining.PopInstruction} values which contain the label and Pop value
      */
-    public static <T extends  Traversal.Admin<?, ?>> Set<Scoping.ScopingInfo> getScopingInfoForTraversal(final T traversal) {
-        final Set<Scoping.ScopingInfo> scopingInfos = new HashSet<>();
+    public static <T extends  Traversal.Admin<?, ?>> Set<PopContaining.PopInstruction> getPopInstructions(final T traversal) {
+        final Set<PopContaining.PopInstruction> scopingInfos = new HashSet<>();
         for (final Step step: traversal.getSteps()) {
-            if (step instanceof Scoping) {
-                final Set<Scoping.ScopingInfo> scopingInfo = ((Scoping) step).getScopingInfo();
-                scopingInfos.addAll(scopingInfo);
-            }
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin local: ((TraversalParent) step).getLocalChildren()) {
-                    scopingInfos.addAll(TraversalHelper.getScopingInfoForTraversal(local));
-                }
-                for (final Traversal.Admin global: ((TraversalParent) step).getGlobalChildren()) {
-                    scopingInfos.addAll(TraversalHelper.getScopingInfoForTraversal(global));
-                }
+            if (step instanceof PopContaining) {
+                scopingInfos.addAll(((PopContaining) step).getPopInstructions());
             }
         }
         return scopingInfos;

@@ -86,16 +86,15 @@ public final class TraversalSelectStep<S, E> extends MapStep<S, E> implements Tr
     }
 
     @Override
-    public Set<ScopingInfo> getScopingInfo() {
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
         final Set<String> labels = this.getScopeKeys();
-        final Set<ScopingInfo> scopingInfoSet = new HashSet<>();
         for (String label : labels) {
-            final ScopingInfo scopingInfo = new ScopingInfo();
-            scopingInfo.label = label;
-            scopingInfo.pop = this.getPop();
-            scopingInfoSet.add(scopingInfo);
+            final PopInstruction scopingInfo = new PopInstruction(this.getPop(), label);
+            popInstructions.add(scopingInfo);
         }
-        return scopingInfoSet;
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
     }
 
     @Override

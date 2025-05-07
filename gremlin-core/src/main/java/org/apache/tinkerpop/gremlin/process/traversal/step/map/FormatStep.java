@@ -170,16 +170,11 @@ public final class FormatStep<S> extends MapStep<S, String> implements ByModulat
     }
 
     @Override
-    public Set<ScopingInfo> getScopingInfo() {
-        final Set<String> labels = this.getScopeKeys();
-        final Set<ScopingInfo> scopingInfoSet = new HashSet<>();
-        for (String label : labels) {
-            final ScopingInfo scopingInfo = new ScopingInfo();
-            scopingInfo.label = label;
-            scopingInfo.pop = Pop.last;
-            scopingInfoSet.add(scopingInfo);
-        }
-        return scopingInfoSet;
+    public HashSet<PopInstruction> getPopInstructions() {
+        final HashSet<PopInstruction> popInstructions = new HashSet<>();
+        popInstructions.addAll(Scoping.super.getPopInstructions());
+        popInstructions.addAll(TraversalParent.super.getPopInstructions());
+        return popInstructions;
     }
 
     @Override

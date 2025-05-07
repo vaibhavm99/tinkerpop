@@ -19,11 +19,12 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
@@ -76,31 +77,19 @@ public class MathStepTest extends StepTest {
     }
 
     @Test
-    public void testScopingInfo() {
+    public void testPopInstruction() {
         final GraphTraversal<Object, Object> traversal = __.identity();
 
         final MathStep mathStep = new MathStep<>((Traversal.Admin) traversal, "a + b - c");
 
         // Expected Output
-        final HashSet<Scoping.ScopingInfo> scopingInfoSet = new HashSet<>();
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"a", Pop.last},
+                new Object[]{"b", Pop.last},
+                new Object[]{"c", Pop.last}
+        );
 
-        final Scoping.ScopingInfo scopingInfo1 = new Scoping.ScopingInfo();
-        scopingInfo1.label = "a";
-        scopingInfo1.pop = Pop.last;
-
-        final Scoping.ScopingInfo scopingInfo2 = new Scoping.ScopingInfo();
-        scopingInfo2.label = "b";
-        scopingInfo2.pop = Pop.last;
-
-        final Scoping.ScopingInfo scopingInfo3 = new Scoping.ScopingInfo();
-        scopingInfo3.label = "c";
-        scopingInfo3.pop = Pop.last;
-
-        scopingInfoSet.add(scopingInfo1);
-        scopingInfoSet.add(scopingInfo2);
-        scopingInfoSet.add(scopingInfo3);
-
-        assertEquals(scopingInfoSet, mathStep.getScopingInfo());
+        assertEquals(popInstructionSet, mathStep.getPopInstructions());
     }
 
 }

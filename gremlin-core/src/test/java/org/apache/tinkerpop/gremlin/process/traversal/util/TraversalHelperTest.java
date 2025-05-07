@@ -18,13 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.TraversalVertexProgramStep;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
@@ -497,46 +498,32 @@ public class TraversalHelperTest {
         assertEquals("f", ((PropertiesStep) steps.get(5)).getPropertyKeys()[0]);
     }
 
-    // Helper function to create a Set of `ScopingInfo` values
-    public Set<Scoping.ScopingInfo> createScopingInfoSet(Object[]... pairs) {
-        Set<Scoping.ScopingInfo> scopingInfos = new HashSet<>();
-
-        // Each pair should contain a name (String) and a Pop value
-        for (Object[] pair : pairs) {
-            if (pair.length == 2 && pair[0] instanceof String && pair[1] instanceof Pop) {
-                scopingInfos.add(new Scoping.ScopingInfo((String)pair[0], (Pop)pair[1]));
-            }
-        }
-
-        return scopingInfos;
-    }
-
     @Test
-    public void shouldGetScopingInfo() {
+    public void shouldGetPopInstructions() {
         final List<Traversal.Admin<?,?>> traversals = new ArrayList<>();
-        final List<Set<Scoping.ScopingInfo>> expectedResults = new ArrayList<>();
+        final List<Set<PopContaining.PopInstruction>> expectedResults = new ArrayList<>();
 
         ///
         traversals.add(__.V().has("person", "name", "marko").as("start").repeat(out().as("reached").select("start")).times(2).select("reached").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"start", Pop.last},
                 new Object[]{"reached", Pop.last}
         ));
         ///
         traversals.add(__.V().select("vertex").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"vertex", Pop.last}
         ));
         ///
         traversals.add(__.V().out().as("a").repeat(union(out().select("a"), path().select(Pop.mixed, "b"))).select(Pop.first,"c").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"a", Pop.last},
                 new Object[]{"b", Pop.mixed},
                 new Object[]{"c", Pop.first}
         ));
         ///
         traversals.add(__.V().as("b").repeat(select("b").out().as("a")).times(2).select(Pop.first, "a").select(Pop.last, "a").project("bb").by(__.select(Pop.all, "a")).asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"b", Pop.last},
                 new Object[]{"a", Pop.first},
                 new Object[]{"a", Pop.all},
@@ -544,43 +531,43 @@ public class TraversalHelperTest {
         ));
         ///
         traversals.add(__.V("1").as("b").repeat(select("b").out().as("a")).times(2).path().as("c").by("name").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"b", Pop.last}
         ));
         ///
         traversals.add(__.V().union(out().as("a"), repeat(out().as("a")).emit()).select(Pop.last, "a").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"a", Pop.last}
         ));
         ///
         traversals.add(__.V().has("person", "name", "marko").as("start").repeat(out()).times(2).where(P.neq("start")).values("name").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"start", Pop.last}
         ));
         ///
         traversals.add(__.V().union(out(), repeat(out().as("a")).emit()).select(Pop.last, "a").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"a", Pop.last}
         ));
         ///
         traversals.add(__.V().as("a").union(path(), repeat(out().select(Pop.last, "a"))).asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"a", Pop.last}
         ));
         ///
         traversals.add(__.V().hasLabel("person").repeat(out("created")).emit().as("software").select("software").values("name", "lang").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"software", Pop.last}
         ));
         ///
         traversals.add(__.V().hasLabel("person").repeat(out("created").as("created_thing")).emit().as("final").select(Pop.mixed, "created_thing", "final"). by("name").by("lang").asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"created_thing", Pop.mixed},
                 new Object[]{"final", Pop.mixed}
         ));
         ///
         traversals.add(__.V().has("person", "name", "marko").as("start").repeat(out().as("path_element")).until(has("lang")).as("software").select("start", "path_element", "software").by("name").by("name").by(valueMap("name", "lang")).asAdmin());
-        expectedResults.add(createScopingInfoSet(
+        expectedResults.add(TestDataBuilder.createPopInstructionSet(
                 new Object[]{"start", Pop.last},
                 new Object[]{"path_element", Pop.last},
                 new Object[]{"software", Pop.last}
@@ -588,7 +575,7 @@ public class TraversalHelperTest {
 
         // Run all the tests
         for (int i = 0; i < traversals.size(); i++) {
-            assertEquals(TraversalHelper.getScopingInfoForTraversal(traversals.get(i)), expectedResults.get(i));
+            assertEquals(TraversalHelper.getPopInstructions(traversals.get(i)), expectedResults.get(i));
         }
     }
 }

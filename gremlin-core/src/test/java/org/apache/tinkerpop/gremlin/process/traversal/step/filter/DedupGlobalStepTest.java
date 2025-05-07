@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
@@ -50,21 +51,14 @@ public class DedupGlobalStepTest extends StepTest {
     }
 
     @Test
-    public void testScopingInfo() {
+    public void testPopInstruction() {
         final DedupGlobalStep dedupGlobalStep = new DedupGlobalStep(__.identity().asAdmin(), "label1", "label2", "label1");
 
-        final Scoping.ScopingInfo scopingInfo1 = new Scoping.ScopingInfo();
-        scopingInfo1.label = "label1";
-        scopingInfo1.pop = Pop.last;
+        final HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"label1", Pop.last},
+                new Object[]{"label2", Pop.last}
+        );
 
-        final Scoping.ScopingInfo scopingInfo2 = new Scoping.ScopingInfo();
-        scopingInfo2.label = "label2";
-        scopingInfo2.pop = Pop.last;
-
-        final HashSet<Object> scopingInfoSet = new HashSet<>();
-        scopingInfoSet.add(scopingInfo1);
-        scopingInfoSet.add(scopingInfo2);
-
-        assertEquals(dedupGlobalStep.getScopingInfo(), scopingInfoSet);
+        assertEquals(dedupGlobalStep.getPopInstructions(), popInstructionSet);
     }
 }

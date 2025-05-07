@@ -18,14 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.TestDataBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.PopContaining;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelperTest;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,35 +79,28 @@ public class WhereStepTest extends StepTest {
     }
 
     @Test
-    public void testScopingInfo() {
+    public void testPopInstruction() {
 
         // Testing WherePredicate Step
         final WherePredicateStep wherePredicateStep = new WherePredicateStep(__.identity().asAdmin(), Optional.of("key1"), P.neq("label1"));
 
-        final Scoping.ScopingInfo scopingInfo1 = new Scoping.ScopingInfo();
-        scopingInfo1.label = "key1";
-        scopingInfo1.pop = Pop.last;
+        HashSet<PopContaining.PopInstruction> popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"key1", Pop.last},
+                new Object[]{"label1", Pop.last}
+        );
 
-        final Scoping.ScopingInfo scopingInfo2 = new Scoping.ScopingInfo();
-        scopingInfo2.label = "label1";
-        scopingInfo2.pop = Pop.last;
-
-        HashSet<Scoping.ScopingInfo> scopingInfoHashSet = new HashSet<>();
-        scopingInfoHashSet.add(scopingInfo1);
-        scopingInfoHashSet.add(scopingInfo2);
-
-        assertEquals(wherePredicateStep.getScopingInfo(), scopingInfoHashSet);
+        assertEquals(wherePredicateStep.getPopInstructions(), popInstructionSet);
 
         // Testing WhereTraversal Test
         final WhereTraversalStep whereTraversalStep = new WhereTraversalStep<>(new DefaultTraversal(), __.as("x").select("a", "b").asAdmin());
-        final Scoping.ScopingInfo scopingInfo = new Scoping.ScopingInfo();
-        scopingInfo.label = "x";
-        scopingInfo.pop = Pop.last;
 
-        scopingInfoHashSet = new HashSet<>();
-        scopingInfoHashSet.add(scopingInfo);
+        popInstructionSet = TestDataBuilder.createPopInstructionSet(
+                new Object[]{"x", Pop.last},
+                new Object[]{"a", Pop.last},
+                new Object[]{"b", Pop.last}
+        );
 
-        assertEquals(whereTraversalStep.getScopingInfo(), scopingInfoHashSet);
+        assertEquals(whereTraversalStep.getPopInstructions(), popInstructionSet);
 
     }
 }
